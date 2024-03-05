@@ -1,12 +1,14 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, override_on_non_overriding_member
 
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/common/constants/platform_channels.dart';
 import 'package:pdf_battles/view/pdf_from_asset.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -15,9 +17,15 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage>
+    with WidgetsBindingObserver {
+  final platform = MethodChannel(PlatformChannelsFlutter.channelNameForPDF);
+  late StreamSubscription _intentSub;
+  final _sharedFiles = <SharedMediaFile>[];
+
   Future<void> pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.any);
 
     if (result != null) {
       final String filePath = result.files.single.path!;
@@ -50,17 +58,77 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Listen to media sharing coming from outside the app while the app is in the memory.
+    _intentSub = ReceiveSharingIntent.getMediaStream().listen((value) {
+      _sharedFiles.clear();
+      _sharedFiles.addAll(value);
+      // debugPrint(_sharedFiles.map((f) => f.toMap()) );
+    }, onError: (err) {
+      // debugPrint("getIntentDataStream error: $err");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.hourglass_empty),
+              Text("Error:$err"),
+            ],
+          ),
+        ),
+      );
+    });
+
+    // Get the media sharing coming from outside the app while the app is closed.
+    ReceiveSharingIntent.getInitialMedia().then((value) {
+      _sharedFiles.clear();
+      _sharedFiles.addAll(value);
+      // debugPrint(_sharedFiles.map((f) => f.toMap() ) );
+      List<String> listPdfs = [];
+      for (final SharedMediaFile file in _sharedFiles) {
+        file.mimeType == "application/pdf" ? listPdfs.add(file.path) : null;
+      }
+      if (listPdfs.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PDFViewerFromAsset(
+              pdfAssetPath: listPdfs.first.toString(),
+            ),
+          ),
+        );
+      }
+      // Tell the library that we are done processing the intent.
+      ReceiveSharingIntent.reset();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _intentSub.cancel();
+    super.didChangeAppLifecycleState(state);
+    // if (state == AppLifecycleState.resumed) {}
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(30.0),
+      body: const Padding(
+        padding: EdgeInsets.all(30.0),
         child: SizedBox(
           width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              const Text(
+              Text(
                 "Specially Designed For Maitreya",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -69,26 +137,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                   color: Colors.amberAccent,
                 ),
               ),
-              const SizedBox(
+              SizedBox(
                 height: 30,
               ),
-              SizedBox(
-                width: 400,
-                height: 400,
-                child: CachedNetworkImage(
-                  imageUrl:
-                      "https://www.linkedin.com/in/maitreya-vidhate-93414017b?miniProfileUrn=urn%3Ali%3Afs_miniProfile%3AACoAACqOhTgBa3ElizFuAgHfWC9qPMGMTwX1a9w&lipi=urn%3Ali%3Apage%3Ad_flagship3_search_srp_all%3Bb1xLNvoyRmurDRe%2BV5ZMdQ%3D%3D",
-                  progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      CircularProgressIndicator(
-                          value: downloadProgress.progress),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              )
-              // ElevatedButton.icon(
-              //   onPressed: pickFile,
-              //   icon: const Icon(Icons.file_copy_outlined),
-              //   label: const Text("Pick a file"),
-              // ),
             ],
           ),
         ),
