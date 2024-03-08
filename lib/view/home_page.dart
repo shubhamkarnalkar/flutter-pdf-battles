@@ -1,13 +1,12 @@
-// ignore_for_file: use_build_context_synchronously, override_on_non_overriding_member
+// ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdf_battles/common/constants/platform_channels.dart';
-import 'package:pdf_battles/view/pdf_from_asset.dart';
+import 'package:lottie/lottie.dart';
+import 'package:pdf_battles/common/pick_file.dart';
+import 'package:pdf_battles/common/utils.dart';
+import 'package:pdf_battles/view/pdf_from_file.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -19,85 +18,34 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage>
     with WidgetsBindingObserver {
-  final platform = MethodChannel(PlatformChannelsFlutter.channelNameForPDF);
+  // final platform = MethodChannel(PlatformChannelsFlutter.channelNameForPDF);
   late StreamSubscription _intentSub;
   final _sharedFiles = <SharedMediaFile>[];
-
-  Future<void> pickFile() async {
-    FilePickerResult? result =
-        await FilePicker.platform.pickFiles(type: FileType.any);
-
-    if (result != null) {
-      final String filePath = result.files.single.path!;
-      if (filePath.isNotEmpty && filePath.contains('pdf')) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PDFViewerFromAsset(
-              pdfAssetPath: filePath,
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error: Please pick a pdf file'),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    } else {
-      // User canceled the picker
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Please pick a pdf file'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // Listen to media sharing coming from outside the app while the app is in the memory.
-    _intentSub = ReceiveSharingIntent.getMediaStream().listen((value) {
+    ReceiveSharingIntent.getMediaStream().listen((value) {
       _sharedFiles.clear();
       _sharedFiles.addAll(value);
-      // debugPrint(_sharedFiles.map((f) => f.toMap()) );
+      // debugPrint(__sharedFiles.map((f) => f.toMap()) );
     }, onError: (err) {
-      // debugPrint("getIntentDataStream error: $err");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.hourglass_empty),
-              Text("Error:$err"),
-            ],
-          ),
-        ),
-      );
+      // debugPrint("getIntentDataStream error: $err")
     });
 
     // Get the media sharing coming from outside the app while the app is closed.
     ReceiveSharingIntent.getInitialMedia().then((value) {
       _sharedFiles.clear();
       _sharedFiles.addAll(value);
-      // debugPrint(_sharedFiles.map((f) => f.toMap() ) );
+      // debugPrint(__sharedFiles.map((f) => f.toMap() ) );
       List<String> listPdfs = [];
       for (final SharedMediaFile file in _sharedFiles) {
         file.mimeType == "application/pdf" ? listPdfs.add(file.path) : null;
       }
       if (listPdfs.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PDFViewerFromAsset(
-              pdfAssetPath: listPdfs.first.toString(),
-            ),
-          ),
-        );
+        return listPdfs.first;
       }
       // Tell the library that we are done processing the intent.
       ReceiveSharingIntent.reset();
@@ -114,30 +62,46 @@ class _HomePageState extends ConsumerState<HomePage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _intentSub.cancel();
     super.didChangeAppLifecycleState(state);
-    // if (state == AppLifecycleState.resumed) {}
+    switch (state) {
+      case AppLifecycleState.detached:
+        break;
+      default:
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Padding(
-        padding: EdgeInsets.all(30.0),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
         child: SizedBox(
           width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Text(
-                "Specially Designed For Maitreya",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amberAccent,
+              Container(
+                height: double.infinity,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.pinkAccent,
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 400,
+                    height: 400,
+                    // child: Lottie.asset(carAnimationPath),
+                    child: Lottie.network(
+                      'https://assets1.lottiefiles.com/private_files/lf30_QLsD8M.json',
+                      height: 200.0,
+                      repeat: true,
+                      reverse: true,
+                      animate: true,
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
             ],
@@ -145,11 +109,28 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: pickFile,
+        onPressed: pickPDFFileAndNavigate,
         label: const Text("Pick a pdf file"),
         icon: const Icon(Icons.file_copy_outlined),
         autofocus: true,
       ),
     );
+  }
+
+  Future<void> pickPDFFileAndNavigate() async {
+    try {
+      pickFile("pdf").then(
+        (file) => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PDFViewFromFile(
+              pdfAssetPath: file,
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      showSnackBar(context: context, error: e.toString());
+    }
   }
 }
