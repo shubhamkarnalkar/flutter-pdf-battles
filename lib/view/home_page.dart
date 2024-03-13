@@ -19,8 +19,6 @@ class _HomePageState extends ConsumerState<HomePage>
   String path = "";
   // final platform = MethodChannel(PlatformChannelsFlutter.channelNameForPDF);
   void navigateToPDfPage(String path) {
-    //   "This Overlay widget cannot be marked as needing to build because the framework is already in the process of building widgets. A …"
-    //   "setState() or markNeedsBuild() called during build."
     if (path.isNotEmpty) {
       Navigator.push(
         context,
@@ -57,6 +55,8 @@ class _HomePageState extends ConsumerState<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    //   "This Overlay widget cannot be marked as needing to build because the framework is already in the process of building widgets. A …"
+    //   "setState() or markNeedsBuild() called during build."
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => path.isNotEmpty ? navigateToPDfPage(path) : null,
     );
