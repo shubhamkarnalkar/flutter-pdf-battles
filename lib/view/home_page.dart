@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_battles/view/pdf_from_asset.dart';
+import 'package:pdf_battles/view/settings_page.dart';
 
 import '../common/constants/error_screen.dart';
 import '../common/constants/loader.dart';
@@ -18,12 +19,21 @@ class _HomePageState extends ConsumerState<HomePage>
     with WidgetsBindingObserver {
   String path = "";
   // final platform = MethodChannel(PlatformChannelsFlutter.channelNameForPDF);
+  void navToSettingsPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SettingsPage(),
+      ),
+    );
+  }
+
   void navigateToPDfPage(String path) {
     if (path.isNotEmpty) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PDFViewerFromAsset(
+          builder: (context) => PDFViewerFromFilePath(
             pdfAssetPath: path,
           ),
         ),
@@ -60,17 +70,29 @@ class _HomePageState extends ConsumerState<HomePage>
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => path.isNotEmpty ? navigateToPDfPage(path) : null,
     );
-    return ref.watch(intentFilesProvider).when(
-        data: (files) {
-          if (files.isNotEmpty) {
-            debugPrint(files.toString());
-            path = files.first.path;
-          }
-          return const HistoryPage();
-        },
-        error: (err, _) => ErrorScreen(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(''),
+        actions: [
+          IconButton(
+            onPressed: navToSettingsPage,
+            icon: const Icon(Icons.settings),
+          )
+        ],
+      ),
+      body: ref.watch(intentFilesProvider).when(
+            data: (files) {
+              if (files.isNotEmpty) {
+                debugPrint(files.toString());
+                path = files.first.path;
+              }
+              return const HistoryPage();
+            },
+            error: (err, _) => ErrorScreen(
               error: err.toString(),
             ),
-        loading: () => const Loader());
+            loading: () => const Loader(),
+          ),
+    );
   }
 }

@@ -3,26 +3,29 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/controller/history_file_names_controller.dart';
 
-class PDFViewerFromAsset extends StatefulWidget {
-  const PDFViewerFromAsset({Key? key, required this.pdfAssetPath})
+class PDFViewerFromFilePath extends ConsumerStatefulWidget {
+  const PDFViewerFromFilePath({Key? key, required this.pdfAssetPath})
       : super(key: key);
   final String pdfAssetPath;
 
   @override
-  State<PDFViewerFromAsset> createState() => _PDFViewerFromAssetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _PDFViewerFromFilePathState();
 }
 
-class _PDFViewerFromAssetState extends State<PDFViewerFromAsset> {
+class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
   final Completer<PDFViewController> _pdfViewController =
       Completer<PDFViewController>();
-late String fileName;
+  late String fileName;
   final StreamController<String> _pageCountController =
       StreamController<String>();
   @override
   void initState() {
-   fileName =
-        File(widget.pdfAssetPath).uri.pathSegments.last.toString();
+    fileName = File(widget.pdfAssetPath).uri.pathSegments.last.toString();
+    ref.read(historyFilesProvider.notifier).addFilePath(widget.pdfAssetPath);
     super.initState();
   }
 

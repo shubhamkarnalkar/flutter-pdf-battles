@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'common/initialize_functions.dart';
+import 'controller/settings_controller.dart';
 import 'view/home_page.dart';
 
-void main() {
+void main() async {
+  await initialize();
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -22,10 +25,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PDF Battles',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-        useMaterial3: true,
-      ),
+      theme: ref.watch(themeModeProvider),
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );

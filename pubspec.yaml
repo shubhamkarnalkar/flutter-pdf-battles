@@ -40,6 +40,9 @@ dependencies:
   cached_network_image: ^3.3.1
   receive_sharing_intent: ^1.6.7
   lottie: ^2.6.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  carousel_slider: ^4.2.1
   flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:

@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../common/constants/constants.dart';
+import 'package:pdf_battles/common/constants/show_snack_bar_message.dart';
+import 'package:pdf_battles/view/carasoul_pdfs_widget.dart';
+import 'package:pdf_battles/view/nothing_to_show_widget.dart';
+import '../controller/history_file_names_controller.dart';
+import '../controller/settings_controller.dart';
 import 'pdf_from_asset.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
@@ -15,7 +17,6 @@ class HistoryPage extends ConsumerStatefulWidget {
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
-  void setHistoryValue(bool val) {}
   Future<void> pickFile() async {
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.any);
@@ -26,62 +27,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PDFViewerFromAsset(
+            builder: (context) => PDFViewerFromFilePath(
               pdfAssetPath: filePath,
             ),
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error: Please pick a pdf file'),
-            duration: Duration(seconds: 3),
-          ),
-        );
+        showSnackBarMessage(context, "", 'Error: Please pick a pdf file');
       }
     } else {
       // User canceled the picker
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Please pick a pdf file'),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      showSnackBarMessage(context, "", 'Error: Please pick a pdf file');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<String> pdfs = ref.watch(historyFilesProvider);
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Center(
-                child: Column(
-                  children: [
-                    // SwitchListTile(
-                    //   value: false,
-                    //   title: const Text("Histoy"),
-                    //   onChanged: setHistoryValue,
-                    // ),
-                    Image.asset(
-                      emptyImage,
-                      fit: BoxFit.fitHeight,
-                    ),
-                    const Text('It\'s empty in here'),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+      body: ((ref.read(historyOnOffProvider) == true && pdfs.isNotEmpty))
+          ? CarasoulPage(
+              pdfs: pdfs,
+            )
+          : const NothingToShow(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: pickFile,
         label: const Text("Pick a pdf file"),
