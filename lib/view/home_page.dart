@@ -72,7 +72,8 @@ class _HomePageState extends ConsumerState<HomePage>
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: const Text('PDF Battles'),
+        centerTitle: true,
         actions: [
           IconButton(
             onPressed: navToSettingsPage,

@@ -8,7 +8,7 @@ final settingsProvider = Provider((ref) {
 });
 
 final themeModeProvider =
-    StateNotifierProvider<ThemeValueNotifier, ThemeData>((ref) {
+    StateNotifierProvider<ThemeValueNotifier, ThemeMode>((ref) {
   return ThemeValueNotifier(ref.read(settingsProvider));
 });
 
@@ -20,51 +20,32 @@ final settingsChangeProvider = StreamProvider((ref) async* {
   yield Hive.box(settingsBox).listenable();
 });
 
-class ThemeValueNotifier extends StateNotifier<ThemeData> {
+class ThemeValueNotifier extends StateNotifier<ThemeMode> {
   final Box<dynamic> settingsVal;
-  ThemeValueNotifier(this.settingsVal)
-      : super(
-          ThemeData.light().copyWith(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-            useMaterial3: true,
-          ),
-        ) {
+  ThemeValueNotifier(this.settingsVal) : super(ThemeMode.light) {
     init(settingsVal);
   }
 
   init(Box<dynamic> settingsVal) {
     if (Hive.isBoxOpen(settingsBox)) {
-      debugPrint(Hive.isBoxOpen(settingsBox).toString());
-      final ThemeMode themeMode = settingsVal.get(theme) ?? ThemeMode.light;
-      switch (themeMode) {
-        case ThemeMode.dark:
-          state = ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-            useMaterial3: true,
-          );
-        default:
-          state = ThemeData.light().copyWith(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-            useMaterial3: true,
-          );
+      // debugPrint(Hive.isBoxOpen(settingsBox).toString());
+      var themeMode = settingsVal.get(themeWord, defaultValue: ThemeMode.light);
+      if (themeMode == ThemeMode.dark.toString()) {
+        state = ThemeMode.dark;
+      } else {
+        state = ThemeMode.light;
       }
     }
   }
 
   setDark() async {
-    await settingsVal.put(theme, ThemeMode.dark);
-    state = ThemeData.dark().copyWith(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-      useMaterial3: true,
-    );
+    await settingsVal.put(themeWord, ThemeMode.dark.toString());
+    state = ThemeMode.dark;
   }
 
   setLight() async {
-    await settingsVal.put(theme, ThemeMode.light);
-    state = ThemeData.light().copyWith(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-      useMaterial3: true,
-    );
+    await settingsVal.put(themeWord, ThemeMode.light.toString());
+    state = ThemeMode.light;
   }
 }
 

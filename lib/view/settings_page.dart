@@ -25,11 +25,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = identical(ref.watch(themeModeProvider), ThemeMode.dark);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Settings',
         ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
           onPressed: () => Navigator.of(context).pop(),
@@ -40,11 +42,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: [
             SwitchListTile(
               value: false,
-              title: const Text("Histoy"),
+              title: const Text("History"),
               onChanged: setHistoryValue,
             ),
             SwitchListTile(
-              value: false,
+              value: isDark,
               title: const Text("Dark Mode"),
               onChanged: setDarkModeValue,
             ),

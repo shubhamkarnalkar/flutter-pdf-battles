@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'common/initialize_functions.dart';
+import 'common/theme.dart';
 import 'controller/settings_controller.dart';
 import 'view/home_page.dart';
 
@@ -25,7 +26,9 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PDF Battles',
-      theme: ref.watch(themeModeProvider),
+      themeMode: ref.watch(themeModeProvider),
+      theme: ThemeDesigner.LightTheme,
+      darkTheme: ThemeDesigner.DarkTheme,
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
