@@ -12,7 +12,8 @@ final themeModeProvider =
   return ThemeValueNotifier(ref.read(settingsProvider));
 });
 
-final historyOnOffProvider = StateNotifierProvider((ref) {
+final historyOnOffProvider =
+    StateNotifierProvider<HistoryOnOffNotifier, bool>((ref) {
   return HistoryOnOffNotifier(settings: ref.read(settingsProvider));
 });
 
@@ -57,11 +58,16 @@ class HistoryOnOffNotifier extends StateNotifier<bool> {
     init();
   }
   init() {
-    state = _settingsBox.get(isHistoyOn) ?? false;
+    var _val = _settingsBox.get(isHistoyOn, defaultValue: false);
+    if (_val == true.toString()) {
+      state = true;
+    } else {
+      state = false;
+    }
   }
 
   void set(bool isHis) {
-    _settingsBox.put(isHistoyOn, isHis);
+    _settingsBox.put(isHistoyOn, isHis.toString());
     state = isHis;
   }
 }

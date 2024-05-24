@@ -11,8 +11,7 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   void setHistoryValue(bool val) {
-    if (val) {
-    } else {}
+    ref.read(historyOnOffProvider.notifier).set(val);
   }
 
   void setDarkModeValue(bool valDark) {
@@ -25,7 +24,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = identical(ref.watch(themeModeProvider), ThemeMode.dark);
+    final bool _isHistoryOn = identical(ref.watch(historyOnOffProvider), true);
+    final bool _isDark =
+        identical(ref.watch(themeModeProvider), ThemeMode.dark);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -41,12 +42,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         child: Column(
           children: [
             SwitchListTile(
-              value: false,
+              value: _isHistoryOn,
               title: const Text("History"),
               onChanged: setHistoryValue,
             ),
             SwitchListTile(
-              value: isDark,
+              value: _isDark,
               title: const Text("Dark Mode"),
               onChanged: setDarkModeValue,
             ),

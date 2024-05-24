@@ -19,13 +19,15 @@ class PDFViewerFromFilePath extends ConsumerStatefulWidget {
 class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
   final Completer<PDFViewController> _pdfViewController =
       Completer<PDFViewController>();
-  late String fileName;
+  late String _fileName;
   final StreamController<String> _pageCountController =
       StreamController<String>();
   @override
   void initState() {
-    fileName = File(widget.pdfAssetPath).uri.pathSegments.last.toString();
-    ref.read(historyFilesProvider.notifier).addFilePath(widget.pdfAssetPath);
+    _fileName = File(widget.pdfAssetPath).uri.pathSegments.last.toString();
+    ref
+        .read(historyFilesProvider.notifier)
+        .addFilePath(name: _fileName, filePath: widget.pdfAssetPath);
     super.initState();
   }
 
@@ -33,7 +35,7 @@ class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(fileName),
+        title: Text(_fileName),
         actions: <Widget>[
           StreamBuilder<String>(
               stream: _pageCountController.stream,
@@ -104,13 +106,13 @@ class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
                     ),
                   ),
                   onPressed: () async {
-                    final PDFViewController pdfController = snapshot.data!;
+                    final PDFViewController _pdfController = snapshot.data!;
                     final int currentPage =
-                        (await pdfController.getCurrentPage())! + 1;
+                        (await _pdfController.getCurrentPage())! + 1;
                     final int numberOfPages =
-                        await pdfController.getPageCount() ?? 0;
+                        await _pdfController.getPageCount() ?? 0;
                     if (numberOfPages > currentPage) {
-                      await pdfController.setPage(currentPage);
+                      await _pdfController.setPage(currentPage);
                     }
                   },
                 ),

@@ -1,47 +1,85 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/model/hive/pdf_files.dart';
+import 'package:pdf_battles/view/pdf_from_asset.dart';
+import 'package:pdf_battles/view/pdf_from_asset_widget.dart';
 
-class CarasoulPage extends ConsumerWidget {
-  final List<String> pdfs;
-  const CarasoulPage({super.key, required this.pdfs});
+class CarasoulWidget extends ConsumerWidget {
+  final List<PdfFiles> pdfs;
+  const CarasoulWidget({super.key, required this.pdfs});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(18.0),
       child: CarouselSlider(
-          items: pdfs.map((i) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
+        items: pdfs.map((i) {
+          return Builder(
+            builder: (BuildContext context) {
+              return GestureDetector(
+                onDoubleTap: () {
+                  if (i.name.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PDFViewerFromFilePath(
+                          pdfAssetPath: i.path,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
                   width: MediaQuery.of(context).size.width,
                   margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                  decoration: const BoxDecoration(color: Colors.amber),
-                  child: Text(
-                    'text $i',
-                    style: const TextStyle(fontSize: 16.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                );
-              },
-            );
-          }).toList(),
-          options: CarouselOptions(
-            height: double.maxFinite,
-            aspectRatio: 16 / 9,
-            viewportFraction: 0.8,
-            initialPage: 0,
-            enableInfiniteScroll: true,
-            reverse: false,
-            autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 3),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true,
-            enlargeFactor: 0.3,
-            // onPageChanged: onChange,
-            scrollDirection: Axis.horizontal,
-          )),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '${i.name}',
+                            style: const TextStyle(fontSize: 16.0),
+                          ),
+                        ),
+                        Expanded(
+                          child: PDFViewerFromFilePathWidget(
+                            pdfAssetPath: i.path,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
+        options: CarouselOptions(
+          height: double.maxFinite,
+          aspectRatio: 16 / 9,
+          viewportFraction: 0.8,
+          initialPage: 0,
+          enableInfiniteScroll: false,
+          reverse: true,
+          autoPlay: false,
+          autoPlayInterval: const Duration(seconds: 3),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          enlargeCenterPage: true,
+          enlargeFactor: 0.3,
+          // onPageChanged: onChange,
+          scrollDirection: Axis.horizontal,
+        ),
+      ),
     );
   }
 

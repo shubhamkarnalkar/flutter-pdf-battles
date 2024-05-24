@@ -20,11 +20,29 @@ class NothingToShow extends ConsumerWidget {
             Center(
               child: Column(
                 children: [
-                  Image.asset(
-                    emptyImage,
-                    fit: BoxFit.fitHeight,
+                  Container(
+                    height: 400,
+                    width: 400,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                        fit: BoxFit.fitHeight,
+                        image: AssetImage(
+                          emptyImage,
+                        ),
+                      ),
+                    ),
                   ),
-                  const Text('It\'s empty in here'),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'It\'s empty in here',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ],
               ),
             )
