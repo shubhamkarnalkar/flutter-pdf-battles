@@ -19,17 +19,20 @@ class PdfFilesAdapter extends TypeAdapter<PdfFiles> {
     return PdfFiles(
       name: fields[0] as String,
       path: fields[1] as String,
+      isPinned: fields[2] == null ? false : fields[2] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, PdfFiles obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.path);
+      ..write(obj.path)
+      ..writeByte(2)
+      ..write(obj.isPinned);
   }
 
   @override

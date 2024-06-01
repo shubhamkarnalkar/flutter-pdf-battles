@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pdf_battles/common/constants/constants.dart';
+import 'package:pdf_battles/controller/history_file_names_controller.dart';
 
 final settingsProvider = Provider((ref) {
   return Hive.box(settingsBox);
@@ -14,7 +15,7 @@ final themeModeProvider =
 
 final historyOnOffProvider =
     StateNotifierProvider<HistoryOnOffNotifier, bool>((ref) {
-  return HistoryOnOffNotifier(settings: ref.read(settingsProvider));
+  return HistoryOnOffNotifier(ref: ref, settings: ref.read(settingsProvider));
 });
 
 final settingsChangeProvider = StreamProvider((ref) async* {
@@ -52,8 +53,10 @@ class ThemeValueNotifier extends StateNotifier<ThemeMode> {
 
 class HistoryOnOffNotifier extends StateNotifier<bool> {
   final Box<dynamic> _settingsBox;
-  HistoryOnOffNotifier({required Box<dynamic> settings})
+  final Ref _ref;
+  HistoryOnOffNotifier({required Ref ref, required Box<dynamic> settings})
       : _settingsBox = settings,
+        _ref = ref,
         super(false) {
     init();
   }
@@ -68,6 +71,7 @@ class HistoryOnOffNotifier extends StateNotifier<bool> {
 
   void set(bool isHis) {
     _settingsBox.put(isHistoyOn, isHis.toString());
+    if (!isHis) _ref.read(historyFilesProvider.notifier).clearBox();
     state = isHis;
   }
 }

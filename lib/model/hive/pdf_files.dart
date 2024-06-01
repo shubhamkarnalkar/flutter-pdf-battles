@@ -4,12 +4,15 @@ part 'pdf_files.g.dart';
 
 @HiveType(typeId: 1)
 class PdfFiles extends HiveObject {
-  PdfFiles({required this.name, required this.path});
+  PdfFiles({required this.name, required this.path, this.isPinned = false});
   @HiveField(0)
-  final String name;
+  late String name;
   @HiveField(1)
-  final String path;
+  late String path;
+  @HiveField(2, defaultValue: false)
+  late bool isPinned;
 
   @override
-  String toString() => 'PdfFiles(name: $name, path: $path)';
+  String toString() =>
+      'PdfFiles(name: $name, path: $path, isPinned: $isPinned)';
 }

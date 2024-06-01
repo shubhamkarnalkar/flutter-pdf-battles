@@ -3,8 +3,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_battles/common/constants/show_snack_bar_message.dart';
+import 'package:pdf_battles/controller/view_controller.dart';
 import 'package:pdf_battles/model/hive/pdf_files.dart';
 import 'package:pdf_battles/view/carasoul_pdfs_widget.dart';
+import 'package:pdf_battles/view/list_view_history.dart';
+import 'package:pdf_battles/view/loading_page.dart';
 import 'package:pdf_battles/view/nothing_to_show_widget.dart';
 import 'package:pick_or_save/pick_or_save.dart';
 import '../controller/history_file_names_controller.dart';
@@ -21,14 +24,20 @@ class HistoryPage extends ConsumerStatefulWidget {
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   late String filePath;
+  late String _fileName;
   Future<void> pickFile() async {
     if (Platform.isAndroid) {
       List<String>? WithoutCachedResultList = await PickOrSave().filePicker(
         params: FilePickerParams(
             getCachedFilePath: false, mimeTypesFilter: ["application/pdf"]),
       );
-      if (WithoutCachedResultList?.length != 0) {
-        filePath = WithoutCachedResultList![0];
+      if (WithoutCachedResultList!.isNotEmpty) {
+        final FileMetadata _metaData = await PickOrSave().fileMetaData(
+            params: FileMetadataParams(filePath: WithoutCachedResultList[0]));
+        filePath = WithoutCachedResultList[0];
+        _fileName =
+            File(_metaData.displayName!).uri.pathSegments.last.toString();
+        ;
       }
     } else {
       FilePickerResult? result =
@@ -41,12 +50,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       }
     }
 
-    if (filePath.isNotEmpty && filePath.contains('pdf')) {
+    if (filePath.isNotEmpty && _fileName.isNotEmpty) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PDFViewerFromFilePath(
             pdfAssetPath: filePath,
+            name: _fileName,
           ),
         ),
       );
@@ -59,18 +69,43 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   Widget build(BuildContext context) {
     final bool _isHistoryOn = ref.watch(historyOnOffProvider);
     final List<PdfFiles> _pdfs = ref.watch(historyFilesProvider);
+    final bool _isLoading = ref.watch(loadingProvider).isLoading;
+    final UIViewTypeHistoryPage _uiView = ref.watch(UIViewProvider);
     return Scaffold(
-      body: ((_isHistoryOn == true && _pdfs.isNotEmpty))
-          ? CarasoulWidget(
-              pdfs: _pdfs,
+      appBar: _isHistoryOn && _pdfs.isNotEmpty
+          ? AppBar(
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    ref.read(UIViewProvider.notifier).setView(_uiView);
+                  },
+                  icon: Icon(_uiView == UIViewTypeHistoryPage.List
+                      ? Icons.list_alt
+                      : Icons.camera_rear_outlined),
+                ),
+              ],
             )
-          : const NothingToShow(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: pickFile,
-        label: const Text("Pick a pdf file"),
-        icon: const Icon(Icons.file_copy_outlined),
-        autofocus: true,
-      ),
+          : null,
+      body: _isLoading
+          ? LoadingWidget()
+          : ((_isHistoryOn == true && _pdfs.isNotEmpty))
+              ? _uiView == UIViewTypeHistoryPage.Carasoul
+                  ? CarasoulWidget(
+                      pdfs: _pdfs,
+                    )
+                  : ListViewHistory(
+                      files: _pdfs,
+                    )
+              : const NothingToShow(),
+      floatingActionButton: _isLoading
+          ? SizedBox()
+          : FloatingActionButton.extended(
+              heroTag: 'pick',
+              onPressed: pickFile,
+              label: const Text("Pick a pdf file"),
+              icon: const Icon(Icons.file_copy_outlined),
+              autofocus: true,
+            ),
     );
   }
 }

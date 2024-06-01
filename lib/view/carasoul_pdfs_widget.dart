@@ -1,9 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/controller/settings_controller.dart';
 import 'package:pdf_battles/model/hive/pdf_files.dart';
 import 'package:pdf_battles/view/pdf_from_asset.dart';
 import 'package:pdf_battles/view/pdf_from_asset_widget.dart';
+
+import '../controller/history_file_names_controller.dart';
 
 class CarasoulWidget extends ConsumerWidget {
   final List<PdfFiles> pdfs;
@@ -11,6 +14,7 @@ class CarasoulWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final _isDark = identical(ref.read(themeModeProvider), ThemeMode.dark);
     return Padding(
       padding: const EdgeInsets.all(18.0),
       child: CarouselSlider(
@@ -18,13 +22,14 @@ class CarasoulWidget extends ConsumerWidget {
           return Builder(
             builder: (BuildContext context) {
               return GestureDetector(
-                onDoubleTap: () {
+                onTap: () {
                   if (i.name.isNotEmpty) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => PDFViewerFromFilePath(
                           pdfAssetPath: i.path,
+                          name: i.name,
                         ),
                       ),
                     );
@@ -38,25 +43,36 @@ class CarasoulWidget extends ConsumerWidget {
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(10),
+                    color: _isDark ? Colors.white : null,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            '${i.name}',
-                            style: const TextStyle(fontSize: 16.0),
-                          ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${i.name}',
+                              style: const TextStyle(fontSize: 16.0),
+                            ),
+                            IconButton.outlined(
+                              onPressed: () => ref
+                                  .read(historyFilesProvider.notifier)
+                                  .changePinnedStatus(i.isPinned, i.name),
+                              icon: Icon(i.isPinned
+                                  ? Icons.push_pin
+                                  : Icons.push_pin_outlined),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          child: PDFViewerFromFilePathWidget(
-                            pdfAssetPath: i.path,
-                          ),
+                      ),
+                      Expanded(
+                        child: PDFViewerFromFilePathWidget(
+                          pdfAssetPath: i.path,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -69,7 +85,7 @@ class CarasoulWidget extends ConsumerWidget {
           viewportFraction: 0.8,
           initialPage: 0,
           enableInfiniteScroll: false,
-          reverse: true,
+          reverse: false,
           autoPlay: false,
           autoPlayInterval: const Duration(seconds: 3),
           autoPlayAnimationDuration: const Duration(milliseconds: 800),
