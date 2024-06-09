@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdf_battles/view/loading_page.dart';
 import 'package:pdf_battles/view/pdf_from_asset.dart';
 import 'package:pdf_battles/view/settings_page.dart';
 
 import '../common/constants/error_screen.dart';
 import '../common/constants/loader.dart';
 import '../controller/sharing_intent_controller.dart';
-import '../controller/view_controller.dart';
 import 'history_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {

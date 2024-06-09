@@ -25,7 +25,7 @@ class NothingToShow extends ConsumerWidget {
                     width: 400,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        width: 2,
+                        width: 1,
                       ),
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
@@ -43,6 +43,8 @@ class NothingToShow extends ConsumerWidget {
                     'It\'s empty in here',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
+                  Text(
+                      'Turn on history in the settings to see the names of the previously opened files'),
                 ],
               ),
             )

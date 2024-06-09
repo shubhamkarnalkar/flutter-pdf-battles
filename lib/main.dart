@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/common/constants/providers.dart';
 import 'common/initialize_functions.dart';
 import 'common/theme.dart';
 import 'controller/settings_controller.dart';
@@ -30,6 +31,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: ThemeDesigner.LightTheme,
       darkTheme: ThemeDesigner.DarkTheme,
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: ref.read(messengerKeyProvider),
       home: const HomePage(),
     );
   }

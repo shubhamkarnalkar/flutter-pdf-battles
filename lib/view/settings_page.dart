@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_battles/controller/settings_controller.dart';
 
+import '../common/constants/providers.dart';
+
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
@@ -27,6 +29,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final bool _isHistoryOn = identical(ref.watch(historyOnOffProvider), true);
     final bool _isDark =
         identical(ref.watch(themeModeProvider), ThemeMode.dark);
+    final packageInfo = ref.watch(packageInfoProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -50,6 +53,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               value: _isDark,
               title: const Text("Dark Mode"),
               onChanged: setDarkModeValue,
+            ),
+            Align(
+              alignment: AlignmentDirectional.bottomCenter,
+              child: packageInfo.when(
+                data: (data) => Text('version: ${data.version}'),
+                error: (error, stackTrace) => Text(error.toString()),
+                loading: () => CircularProgressIndicator.adaptive(),
+              ),
             ),
           ],
         ),

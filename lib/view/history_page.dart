@@ -2,6 +2,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_battles/common/constants/providers.dart';
 import 'package:pdf_battles/common/constants/show_snack_bar_message.dart';
 import 'package:pdf_battles/controller/view_controller.dart';
 import 'package:pdf_battles/model/hive/pdf_files.dart';
@@ -9,6 +10,7 @@ import 'package:pdf_battles/view/carasoul_pdfs_widget.dart';
 import 'package:pdf_battles/view/list_view_history.dart';
 import 'package:pdf_battles/view/loading_page.dart';
 import 'package:pdf_battles/view/nothing_to_show_widget.dart';
+import 'package:pdf_battles/view/permission_error_page.dart';
 import 'package:pick_or_save/pick_or_save.dart';
 import '../controller/history_file_names_controller.dart';
 import '../controller/settings_controller.dart';
@@ -86,17 +88,26 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               ],
             )
           : null,
-      body: _isLoading
-          ? LoadingWidget()
-          : ((_isHistoryOn == true && _pdfs.isNotEmpty))
-              ? _uiView == UIViewTypeHistoryPage.Carasoul
-                  ? CarasoulWidget(
-                      pdfs: _pdfs,
-                    )
-                  : ListViewHistory(
-                      files: _pdfs,
-                    )
-              : const NothingToShow(),
+      body: ref.watch(permissionProvider).when(
+            data: (d) => _isLoading
+                ? LoadingWidget()
+                : ((_isHistoryOn == true && _pdfs.isNotEmpty))
+                    ? _uiView == UIViewTypeHistoryPage.Carasoul
+                        ? CarasoulWidget(
+                            key: UniqueKey(),
+                            pdfs: _pdfs,
+                          )
+                        : ListViewHistory(
+                            files: _pdfs,
+                          )
+                    : const NothingToShow(),
+            error: (error, stackTrace) => PermissionErrorPage(
+              errorMessage: error.toString(),
+            ),
+            loading: () => Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
+          ),
       floatingActionButton: _isLoading
           ? SizedBox()
           : FloatingActionButton.extended(

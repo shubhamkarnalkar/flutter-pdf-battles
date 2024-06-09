@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motion_toast/motion_toast.dart';
 import 'package:pdf_battles/controller/history_file_names_controller.dart';
 import 'package:universal_io/io.dart';
 
@@ -64,6 +65,13 @@ class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
         swipeHorizontal: true,
         autoSpacing: false,
         pageFling: false,
+        onError: (error) {
+          // debugPrint(error.toString());
+          MotionToast.error(
+                  title: Text("Permission Error"),
+                  description: Text("Go to Settings and give permission"))
+              .show(context);
+        },
         onPageChanged: (int? current, int? total) =>
             _pageCountController.add('${current! + 1} - $total'),
         onViewCreated: (PDFViewController pdfViewController) async {
@@ -85,12 +93,7 @@ class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
               children: <Widget>[
                 FloatingActionButton(
                   heroTag: '<',
-                  child: const Text(
-                    '<',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
+                  child: Icon(Icons.arrow_back_ios),
                   onPressed: () async {
                     final PDFViewController pdfController = snapshot.data!;
                     final int currentPage =
@@ -102,12 +105,7 @@ class _PDFViewerFromFilePathState extends ConsumerState<PDFViewerFromFilePath> {
                 ),
                 FloatingActionButton(
                   heroTag: '>',
-                  child: const Text(
-                    '>',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
+                  child: Icon(Icons.arrow_forward_ios),
                   onPressed: () async {
                     final PDFViewController _pdfController = snapshot.data!;
                     final int currentPage =

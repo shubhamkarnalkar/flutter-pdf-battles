@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pdf_battles/model/hive/pdf_files.dart';
@@ -63,8 +64,25 @@ class HistoryFileNamesNotifier extends StateNotifier<List<PdfFiles>> {
             _filesBoxVal.values.firstWhere((x) => x.name == name);
         _file.isPinned = !isOn;
         _filesBoxVal.put(_file.name, _file);
+        // try {
+        //   MotionToast.success(
+        //     title: Text("Success"),
+        //     description: Text(
+        //       "Pinned status is changed for $name",
+        //       maxLines: 1,
+        //       overflow: TextOverflow.ellipsis,
+        //     ),
+        //   ).show(
+        //     _ref.read(messengerKeyProvider).currentState!.context,
+        //   );
+        // } catch (e) {
+        //   debugPrint('error in showing motion snack');
+        // }
+        // debugPrint(_ref.read(messCtxProvider).toString());
         state = getFilePaths(isSorted: true);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint(e.toString());
+      }
       _ref.read(loadingProvider.notifier).state = LoadingModel();
     }
   }

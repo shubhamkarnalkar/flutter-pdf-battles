@@ -1,11 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pdf_battles/controller/settings_controller.dart';
 import 'package:pdf_battles/model/hive/pdf_files.dart';
 import 'package:pdf_battles/view/pdf_from_asset.dart';
 import 'package:pdf_battles/view/pdf_from_asset_widget.dart';
-
 import '../controller/history_file_names_controller.dart';
 
 class CarasoulWidget extends ConsumerWidget {
@@ -16,7 +16,7 @@ class CarasoulWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final _isDark = identical(ref.read(themeModeProvider), ThemeMode.dark);
     return Padding(
-      padding: const EdgeInsets.all(18.0),
+      padding: const EdgeInsets.all(10.0),
       child: CarouselSlider(
         items: pdfs.map((i) {
           return Builder(
@@ -28,6 +28,7 @@ class CarasoulWidget extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PDFViewerFromFilePath(
+                          key: UniqueKey(),
                           pdfAssetPath: i.path,
                           name: i.name,
                         ),
@@ -37,13 +38,14 @@ class CarasoulWidget extends ConsumerWidget {
                 },
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                  // margin: const EdgeInsets.symmetric(horizontal: 5.0),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      width: 2,
+                      width: 1,
+                      color: _isDark ? Colors.white : Colors.black,
                     ),
-                    borderRadius: BorderRadius.circular(10),
-                    color: _isDark ? Colors.white : null,
+                    borderRadius: BorderRadius.circular(15),
+                    // color: _isDark ? Colors.white : null,
                   ),
                   child: Column(
                     children: [
@@ -52,17 +54,25 @@ class CarasoulWidget extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              '${i.name}',
-                              style: const TextStyle(fontSize: 16.0),
+                            Expanded(
+                              child: Text(
+                                '${i.name}',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                softWrap: true,
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
                             ),
                             IconButton.outlined(
                               onPressed: () => ref
                                   .read(historyFilesProvider.notifier)
                                   .changePinnedStatus(i.isPinned, i.name),
-                              icon: Icon(i.isPinned
-                                  ? Icons.push_pin
-                                  : Icons.push_pin_outlined),
+                              icon: FaIcon(
+                                i.isPinned
+                                    ? FontAwesomeIcons.thumbtack
+                                    : Icons.push_pin_outlined,
+                                color: Colors.lightGreen,
+                              ),
                             ),
                           ],
                         ),
@@ -71,6 +81,10 @@ class CarasoulWidget extends ConsumerWidget {
                         child: PDFViewerFromFilePathWidget(
                           pdfAssetPath: i.path,
                         ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(i.path),
                       ),
                     ],
                   ),

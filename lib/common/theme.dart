@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 class ThemeDesigner {
   // for dark theme add the properties in the copwith method
   static get DarkTheme => ThemeData.dark().copyWith(
-        // primaryColor: Colors.white,
+        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         floatingActionButtonTheme: FloatingActionButtonThemeData().copyWith(
-          backgroundColor: Colors.black54,
-        ),
+            // backgroundColor: Colors.black54,
+            ),
       );
 
   // for light theme add the properties in the copwith method
